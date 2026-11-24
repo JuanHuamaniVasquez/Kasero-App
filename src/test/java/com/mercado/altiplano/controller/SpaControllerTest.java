@@ -13,13 +13,20 @@ class SpaControllerTest {
     void losEnlacesDirectosDePantallasSirvenAngular() throws Exception {
         for (String path : new String[]{"/mercado", "/buscar", "/acceso", "/precios", "/comparar",
                 "/pedidos", "/chats", "/mapa", "/favoritos", "/mi-puesto", "/admin"})
-            mvc.perform(get(path)).andExpect(status().isOk()).andExpect(forwardedUrl("/index.html"));
+            mvc.perform(get(path)).andExpect(status().isFound()).andExpect(redirectedUrl("/#" + path));
     }
 
     @Test
     void losEnlacesConIdentificadoresTambienSirvenAngular() throws Exception {
         for (String path : new String[]{"/puesto/25", "/cotizar/25", "/pedido/25", "/chats/1", "/chat/1"})
-            mvc.perform(get(path)).andExpect(status().isOk()).andExpect(forwardedUrl("/index.html"));
+            mvc.perform(get(path)).andExpect(status().isFound()).andExpect(redirectedUrl("/#" + path));
+    }
+
+    @Test
+    void conservaLosFiltrosDeBusquedaEnElEnlaceCanonico() throws Exception {
+        mvc.perform(get("/mercado?q=papa&sector=Verduras"))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/#/mercado?q=papa&sector=Verduras"));
     }
 
     @Test
