@@ -113,6 +113,20 @@ class AuthServiceTest {
     }
 
     @Test
+    void alDesactivarDemoSeBloqueanLasCuentasDemoExistentesPeroNoLosClientes() {
+        var repo = new UsuariosEnMemoria();
+        var hasher = new PasswordHasher();
+        for (String correo : new String[]{"demo@kasero.local", "nilda@kasero.local", "admin@kasero.local"})
+            repo.guardar("Cuenta demo", correo, hasher.hash("123456"), "ADMIN");
+        var servicio = new AuthService(repo, hasher, new SesionService());
+        org.springframework.test.util.ReflectionTestUtils.setField(servicio, "demoEnabled", false);
+        for (String correo : new String[]{"demo@kasero.local", " Nilda@kasero.local ", "ADMIN@KASERO.LOCAL"})
+            assertThatThrownBy(() -> servicio.login(correo, "123456")).isInstanceOf(AuthenticationException.class);
+        servicio.registrar("Cliente", "cliente@correo.com", "clave1234");
+        assertThat(servicio.login("cliente@correo.com", "clave1234").exitoso()).isTrue();
+    }
+
+    @Test
     void laContrasenaNoSeGuardaEnClaro() {
         var repo = new UsuariosEnMemoria();
         var servicio = new AuthService(repo, new PasswordHasher(), new SesionService());

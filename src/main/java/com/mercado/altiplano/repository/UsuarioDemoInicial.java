@@ -5,6 +5,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 /**
  * Crea las cuentas de prueba (contraseña 123456) si no existen: demo@kasero.local (cliente),
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
  * Son solo para desarrollo: en producción deben cambiarse o eliminarse.
  */
 @Component
+@ConditionalOnProperty(prefix = "kasero.demo", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class UsuarioDemoInicial implements ApplicationRunner {
     private final UsuarioRepositoryPort usuarios;
     private final PasswordHasher hasher;

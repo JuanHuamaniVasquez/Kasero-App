@@ -10,11 +10,18 @@ import com.mercado.altiplano.security.SesionService;
 import java.util.regex.Pattern;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
+import java.util.Set;
+import java.util.Locale;
 
 @Service
 public class AuthService {
     private static final Pattern CORREO = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
     private static final String MSG_INVALIDO = "Correo o contraseña incorrectos";
+    private static final Set<String> CUENTAS_DEMO = Set.of("demo@kasero.local", "nilda@kasero.local", "admin@kasero.local");
+
+    @Value("${kasero.demo.enabled:true}")
+    private boolean demoEnabled = true;
 
     private final UsuarioRepositoryPort usuarios;
     private final PasswordHasher hasher;
@@ -28,6 +35,8 @@ public class AuthService {
 
     public LoginResponse login(String correo, String password) {
         if (correo == null || password == null) throw new AuthenticationException(MSG_INVALIDO);
+        if (!demoEnabled && CUENTAS_DEMO.contains(correo.trim().toLowerCase(Locale.ROOT)))
+            throw new AuthenticationException(MSG_INVALIDO);
         Usuario u = usuarios.buscarPorCorreo(correo.trim())
                 .filter(x -> hasher.verificar(password, x.passwordHash()))
                 .orElseThrow(() -> new AuthenticationException(MSG_INVALIDO));
